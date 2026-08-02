@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: salary-management-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash scripts/start.sh
+    envVars:
+      - key: PORT
+        value: 8000
