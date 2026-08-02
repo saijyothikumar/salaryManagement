@@ -8,3 +8,32 @@ html, body {
 * {
   box-sizing: border-box;
 }
+
+.table-shell {
+  margin-top: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: auto;
+  max-height: 420px;
+}
+
+.employee-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  background: white;
+}
+
+.employee-table th,
+.employee-table td {
+  padding: 0.85rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.employee-table th {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+}
