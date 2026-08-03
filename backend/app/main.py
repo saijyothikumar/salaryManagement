@@ -34,10 +34,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware for local frontend development and web clients
+# CORS middleware for local frontend development and production web clients (Vercel)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["*"],  # Allow requests from local dev and Vercel deployments
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -73,6 +73,17 @@ api_v1_router.include_router(auth_router)
 app.include_router(api_v1_router)
 # Backward-compatibility router mounting for root /employees
 app.include_router(employees_router)
+
+
+@app.get("/", tags=["Root"])
+def root() -> dict[str, str]:
+    return {
+        "status": "ok",
+        "service": "ACME Employee Salary Management API",
+        "version": "0.2.0",
+        "health_check": "/health",
+        "interactive_docs": "/docs",
+    }
 
 
 @app.get("/health", tags=["Health"])
