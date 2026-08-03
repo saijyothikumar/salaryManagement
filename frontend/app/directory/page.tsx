@@ -2,26 +2,23 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import AddEmployeeModal from '../../components/AddEmployeeModal';
+import BackButton from '../../components/BackButton';
 import EditEmployeeModal from '../../components/EditEmployeeModal';
 import EmployeeFilterBar from '../../components/EmployeeFilterBar';
 import EmployeeTable from '../../components/EmployeeTable';
 import Pagination from '../../components/Pagination';
 import SalaryStats from '../../components/SalaryStats';
 import WorkforceCharts from '../../components/WorkforceCharts';
+import { useAuth } from '../../lib/AuthContext';
 import {
-  AuthUser,
   Employee,
   HRAnalyticsResponse,
   fetchEmployees,
   fetchHRAnalytics,
 } from '../../lib/api';
 
-type DirectoryPageProps = {
-  user?: AuthUser | null;
-  token?: string | null;
-};
-
-export default function DirectoryPage({ user, token }: DirectoryPageProps) {
+export default function DirectoryPage() {
+  const { token, isHRManager } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [analytics, setAnalytics] = useState<HRAnalyticsResponse | null>(null);
 
@@ -48,8 +45,6 @@ export default function DirectoryPage({ user, token }: DirectoryPageProps) {
   // Modals
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-  const isHRManager = user?.role === 'hr_manager';
 
   // Search Debounce (300ms)
   useEffect(() => {
@@ -145,6 +140,9 @@ export default function DirectoryPage({ user, token }: DirectoryPageProps) {
 
   return (
     <main className="dashboard-container">
+      {/* Back to Command Center Navigation */}
+      <BackButton />
+
       {/* Page Heading */}
       <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>

@@ -1,7 +1,8 @@
 import React from 'react';
+import Image from 'next/image';
 import { Employee } from '../lib/api';
 
-type TableProps = {
+type EmployeeTableProps = {
   employees: Employee[];
   loading: boolean;
   sortBy: string;
@@ -19,74 +20,75 @@ export default function EmployeeTable({
   onSortChange,
   isHRManager = false,
   onEditEmployee,
-}: TableProps) {
-  const renderSortIndicator = (column: string) => {
-    if (sortBy !== column) return <span className="sort-icon sort-inactive">↕</span>;
-    return <span className="sort-icon sort-active">{sortOrder === 'asc' ? '↑' : '↓'}</span>;
+}: EmployeeTableProps) {
+  const getSortIndicator = (column: string) => {
+    if (sortBy !== column) return null;
+    return sortOrder === 'asc' ? ' ↑' : ' ↓';
   };
 
   const formatSalary = (amount: number, currency: string) => {
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currency || 'USD',
-        maximumFractionDigits: 0,
-      }).format(amount);
-    } catch {
-      return `${currency} ${amount.toLocaleString()}`;
-    }
+    const symbols: Record<string, string> = {
+      USD: '$',
+      GBP: '£',
+      INR: '₹',
+      EUR: '€',
+      JPY: '¥',
+      CAD: 'CA$',
+    };
+    const symbol = symbols[currency] || '$';
+    return `${symbol}${amount.toLocaleString()}`;
   };
 
+  const authTooltip = isHRManager
+    ? 'Click to edit employee compensation'
+    : 'Please log in as HR Manager to edit employee compensation';
+
   return (
-    <div className="table-container">
-      <div className="table-shell">
-        <table className="employee-table">
+    <div className="table-card">
+      <div className="table-responsive">
+        <table className="data-table">
           <thead>
             <tr>
               <th onClick={() => onSortChange('employee_code')} className="sortable-th">
-                Code {renderSortIndicator('employee_code')}
+                Code{getSortIndicator('employee_code')}
               </th>
               <th onClick={() => onSortChange('first_name')} className="sortable-th">
-                Employee Name {renderSortIndicator('first_name')}
+                Name{getSortIndicator('first_name')}
               </th>
               <th onClick={() => onSortChange('department')} className="sortable-th">
-                Department {renderSortIndicator('department')}
+                Department{getSortIndicator('department')}
               </th>
               <th onClick={() => onSortChange('country')} className="sortable-th">
-                Country {renderSortIndicator('country')}
+                Country{getSortIndicator('country')}
               </th>
               <th onClick={() => onSortChange('job_title')} className="sortable-th">
-                Job Title {renderSortIndicator('job_title')}
+                Job Title{getSortIndicator('job_title')}
               </th>
               <th onClick={() => onSortChange('base_salary')} className="sortable-th text-right">
-                Base Salary {renderSortIndicator('base_salary')}
+                Base Salary{getSortIndicator('base_salary')}
               </th>
               <th onClick={() => onSortChange('status')} className="sortable-th">
-                Status {renderSortIndicator('status')}
+                Status{getSortIndicator('status')}
               </th>
               <th onClick={() => onSortChange('joined_at')} className="sortable-th">
-                Joined Date {renderSortIndicator('joined_at')}
+                Joined Date{getSortIndicator('joined_at')}
               </th>
-              {isHRManager && <th>Action</th>}
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={isHRManager ? 9 : 8} className="empty-cell">
-                  <div className="loader-box">
-                    <img
+                <td colSpan={9} className="loading-cell">
+                  <div className="table-loader-container">
+                    <Image
                       src="/loader.gif"
                       alt="Loading..."
-                      className="loader-img"
+                      width={36}
+                      height={36}
+                      unoptimized
                       onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                        const parent = (e.target as HTMLElement).parentElement;
-                        if (parent && !parent.querySelector('.spinner-fallback')) {
-                          const spinner = document.createElement('div');
-                          spinner.className = 'spinner-fallback';
-                          parent.appendChild(spinner);
-                        }
+                        e.currentTarget.style.display = 'none';
                       }}
                     />
                     <span className="loader-text">Loading employee salary records...</span>
@@ -95,7 +97,7 @@ export default function EmployeeTable({
               </tr>
             ) : employees.length === 0 ? (
               <tr>
-                <td colSpan={isHRManager ? 9 : 8} className="empty-cell">
+                <td colSpan={9} className="empty-cell">
                   No matching employees found for the selected criteria.
                 </td>
               </tr>
@@ -118,17 +120,24 @@ export default function EmployeeTable({
                     </span>
                   </td>
                   <td className="text-secondary text-xs">{employee.joined_at}</td>
-                  {isHRManager && (
-                    <td>
-                      <button
-                        type="button"
-                        onClick={() => onEditEmployee?.(employee)}
-                        className="btn-edit-row"
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  )}
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() => onEditEmployee?.(employee)}
+                      disabled={!isHRManager}
+                      title={authTooltip}
+                      className="btn-edit-row"
+                      style={{
+                        opacity: isHRManager ? 1 : 0.65,
+                        cursor: isHRManager ? 'pointer' : 'not-allowed',
+                        background: isHRManager ? '#0F4C5C' : '#94a3b8',
+                        borderColor: isHRManager ? '#0F4C5C' : '#94a3b8',
+                        color: '#ffffff',
+                      }}
+                    >
+                      {isHRManager ? 'Edit' : 'HR Auth Required'}
+                    </button>
+                  </td>
                 </tr>
               ))
             )}

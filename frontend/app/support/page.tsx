@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import BackButton from '../../components/BackButton';
 
 export default function SupportPage() {
   const faqs = [
@@ -24,6 +25,8 @@ export default function SupportPage() {
 
   return (
     <main className="dashboard-container">
+      <BackButton />
+
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0F4C5C' }}>
           System Support & Frequently Asked Questions

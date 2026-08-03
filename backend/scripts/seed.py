@@ -15,6 +15,7 @@ from app.core.database import DB_PATH, engine
 from app.core.security import hash_password
 from app.models.employee import Employee
 from app.models.user import User
+from app.services.workflow_service import seed_workflow_defaults_if_empty
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("salary_management.seed")
@@ -134,8 +135,11 @@ def seed_employees(total_count: int = 10000, batch_size: int = 1000) -> None:
             session.commit()
             logger.info(f"Committed final {len(records)} employees...")
 
+        # Seed workflow defaults (Approvals, Tasks, Anomalies)
+        seed_workflow_defaults_if_empty(session)
+
     elapsed = time.time() - start_time
-    logger.info(f"Successfully seeded {total_count} employees in {elapsed:.2f} seconds!")
+    logger.info(f"Successfully seeded {total_count} employees and workflow defaults in {elapsed:.2f} seconds!")
 
 
 if __name__ == "__main__":

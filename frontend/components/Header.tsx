@@ -3,35 +3,40 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AuthUser } from '../lib/api';
+import { useAuth } from '../lib/AuthContext';
 
 type HeaderProps = {
-  user: AuthUser | null;
-  onOpenLogin: () => void;
-  onLogout: () => void;
+  onOpenBriefing?: () => void;
 };
 
-export default function Header({ user, onOpenLogin, onLogout }: HeaderProps) {
+export default function Header({ onOpenBriefing }: HeaderProps) {
   const pathname = usePathname();
+  const { user, openLogin, logout } = useAuth();
 
   return (
     <header className="global-navbar">
       <div className="navbar-inner">
+        {/* Brand Logo at Top Left */}
         <Link href="/" className="brand-logo">
           <div className="logo-icon">A</div>
-          <span className="logo-title">ACME Salary Platform</span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span className="logo-title">ACME Salary Management</span>
+            <span style={{ fontSize: '0.675rem', color: '#E9C46A', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              10,000 Staff Compensation Platform
+            </span>
+          </div>
         </Link>
 
         <nav>
           <ul className="nav-links">
             <li>
               <Link href="/" className={`nav-item ${pathname === '/' ? 'active' : ''}`}>
-                Home
+                Command Center
               </Link>
             </li>
             <li>
               <Link href="/directory" className={`nav-item ${pathname === '/directory' ? 'active' : ''}`}>
-                Employee Directory
+                10,000 Directory
               </Link>
             </li>
             <li>
@@ -43,17 +48,29 @@ export default function Header({ user, onOpenLogin, onLogout }: HeaderProps) {
         </nav>
 
         <div className="nav-auth">
+          {onOpenBriefing && (
+            <button
+              type="button"
+              onClick={onOpenBriefing}
+              className="auth-btn auth-btn-outline"
+              style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', background: '#1D8A7A', color: '#ffffff', borderColor: '#1D8A7A' }}
+              title="Open Daily HR Briefing Modal"
+            >
+              Daily Briefing 💡
+            </button>
+          )}
+
           {user ? (
             <>
               <span className="role-badge role-hr">HR Manager ({user.username})</span>
-              <button type="button" onClick={onLogout} className="auth-btn auth-btn-outline">
+              <button type="button" onClick={logout} className="auth-btn auth-btn-outline">
                 Logout
               </button>
             </>
           ) : (
             <>
-              <span className="role-badge role-guest">Guest Mode (Read-Only)</span>
-              <button type="button" onClick={onOpenLogin} className="auth-btn auth-btn-primary">
+              <span className="role-badge role-guest">Guest Mode</span>
+              <button type="button" onClick={openLogin} className="auth-btn auth-btn-primary">
                 HR Login
               </button>
             </>

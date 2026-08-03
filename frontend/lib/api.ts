@@ -41,6 +41,48 @@ export type HRAnalyticsResponse = {
   countries: CountrySalarySummary[];
 };
 
+export type ApprovalRequest = {
+  id: number;
+  request_type: 'new_hire' | 'salary_adjustment' | 'salary_advance' | 'reimbursement';
+  employee_code: string;
+  employee_name: string;
+  department: string;
+  requested_amount: number;
+  attachment_filename?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string | null;
+  created_at: string;
+};
+
+export type HRTask = {
+  id: number;
+  title: string;
+  assigned_to: string;
+  department: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'todo' | 'in_progress' | 'completed';
+  due_date: string;
+};
+
+export type PayrollAnomaly = {
+  id: number;
+  severity: 'critical' | 'warning';
+  title: string;
+  description: string;
+  region: string;
+  resolved: boolean;
+};
+
+export type WorkflowOverviewResponse = {
+  total_pending_approvals: number;
+  critical_anomalies_count: number;
+  payroll_liquidity_usd: number;
+  available_cash_usd: number;
+  anomalies: PayrollAnomaly[];
+  approvals: ApprovalRequest[];
+  tasks: HRTask[];
+};
+
 export type EmployeeFilterParams = {
   page?: number;
   page_size?: number;
@@ -195,6 +237,40 @@ export async function createEmployee(
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({ detail: 'Failed to create employee record' }));
     throw new Error(errorData.detail || 'Creation operation unauthorized or failed.');
+  }
+
+  return res.json();
+}
+
+export async function fetchWorkflowOverview(): Promise<WorkflowOverviewResponse> {
+  const url = `${BASE_URL}/api/v1/workflows/overview`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error('Failed to load workflow overview data');
+  }
+  return res.json();
+}
+
+export async function handleApprovalAction(
+  approvalId: number,
+  action: 'approve' | 'reject',
+  comment: string | undefined,
+  token: string
+): Promise<ApprovalRequest> {
+  const url = `${BASE_URL}/api/v1/workflows/approvals/${approvalId}/action`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ action, comment }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ detail: 'Action processing failed' }));
+    throw new Error(errorData.detail || 'Approval request action failed.');
   }
 
   return res.json();
