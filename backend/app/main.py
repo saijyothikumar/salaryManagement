@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.v1.analytics import router as analytics_router
+from app.api.v1.auth import router as auth_router
 from app.api.v1.employees import router as employees_router
 from app.core.database import initialize_database
 
@@ -67,6 +68,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 api_v1_router = APIRouter(prefix="/api/v1")
 api_v1_router.include_router(employees_router)
 api_v1_router.include_router(analytics_router)
+api_v1_router.include_router(auth_router)
 
 app.include_router(api_v1_router)
 # Backward-compatibility router mounting for root /employees

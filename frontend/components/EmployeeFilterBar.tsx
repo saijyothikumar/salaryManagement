@@ -9,7 +9,13 @@ type FilterBarProps = {
   onCountryChange: (value: string) => void;
   status: string;
   onStatusChange: (value: string) => void;
+  minSalary: string;
+  onMinSalaryChange: (value: string) => void;
+  maxSalary: string;
+  onMaxSalaryChange: (value: string) => void;
   onReset: () => void;
+  isHRManager?: boolean;
+  onOpenAddModal?: () => void;
 };
 
 const DEPARTMENTS = [
@@ -40,9 +46,15 @@ export default function EmployeeFilterBar({
   onCountryChange,
   status,
   onStatusChange,
+  minSalary,
+  onMinSalaryChange,
+  maxSalary,
+  onMaxSalaryChange,
   onReset,
+  isHRManager = false,
+  onOpenAddModal,
 }: FilterBarProps) {
-  const hasActiveFilters = search || department || country || status;
+  const hasActiveFilters = search || department || country || status || minSalary || maxSalary;
 
   return (
     <div className="filter-bar">
@@ -51,7 +63,7 @@ export default function EmployeeFilterBar({
         <input
           id="search-input"
           type="text"
-          placeholder="Search by name, email, code..."
+          placeholder="Search name, email, code..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="filter-input"
@@ -109,10 +121,42 @@ export default function EmployeeFilterBar({
         </select>
       </div>
 
+      <div className="filter-group" style={{ minWidth: '110px' }}>
+        <label htmlFor="min-salary-input" className="filter-label">Min Pay</label>
+        <input
+          id="min-salary-input"
+          type="number"
+          placeholder="e.g. 50000"
+          value={minSalary}
+          onChange={(e) => onMinSalaryChange(e.target.value)}
+          className="filter-input"
+        />
+      </div>
+
+      <div className="filter-group" style={{ minWidth: '110px' }}>
+        <label htmlFor="max-salary-input" className="filter-label">Max Pay</label>
+        <input
+          id="max-salary-input"
+          type="number"
+          placeholder="e.g. 150000"
+          value={maxSalary}
+          onChange={(e) => onMaxSalaryChange(e.target.value)}
+          className="filter-input"
+        />
+      </div>
+
       {hasActiveFilters && (
-        <div className="filter-group reset-group">
+        <div className="filter-group reset-group" style={{ minWidth: 'auto' }}>
           <button type="button" onClick={onReset} className="reset-btn">
             Reset Filters
+          </button>
+        </div>
+      )}
+
+      {isHRManager && (
+        <div className="filter-group" style={{ minWidth: 'auto', marginLeft: 'auto' }}>
+          <button type="button" onClick={onOpenAddModal} className="auth-btn auth-btn-primary">
+            + Add Employee
           </button>
         </div>
       )}

@@ -12,7 +12,9 @@ if str(backend_dir) not in sys.path:
 
 from sqlmodel import Session, SQLModel, create_engine, select, delete
 from app.core.database import DB_PATH, engine
+from app.core.security import hash_password
 from app.models.employee import Employee
+from app.models.user import User
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("salary_management.seed")
@@ -73,12 +75,16 @@ def seed_employees(total_count: int = 10000, batch_size: int = 1000) -> None:
     SQLModel.metadata.create_all(engine)
 
     with Session(engine) as session:
-        # Clear existing data
-        existing_count = session.exec(select(Employee)).all()
-        if existing_count:
-            logger.info(f"Clearing existing {len(existing_count)} records...")
-            session.exec(delete(Employee))
-            session.commit()
+        # Seed default HR Manager account
+        hr_user = User(
+            username="hr_admin",
+            email="hr.admin@acme.org",
+            hashed_password=hash_password("Admin123!@#"),
+            role="hr_manager",
+        )
+        session.add(hr_user)
+        session.commit()
+        logger.info("Seeded default HR Manager user (username: hr_admin)...")
 
         countries = list(COUNTRY_CONFIG.keys())
         country_weights = [COUNTRY_CONFIG[c]["weight"] for c in countries]

@@ -48,8 +48,23 @@ export type EmployeeFilterParams = {
   department?: string;
   country?: string;
   status?: string;
+  min_salary?: number;
+  max_salary?: number;
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
+};
+
+export type AuthUser = {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+};
+
+export type TokenResponse = {
+  access_token: string;
+  token_type: string;
+  user: AuthUser;
 };
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
@@ -63,6 +78,8 @@ export async function fetchEmployees(params: EmployeeFilterParams = {}): Promise
   if (params.department) query.append('department', params.department);
   if (params.country) query.append('country', params.country);
   if (params.status) query.append('status', params.status);
+  if (params.min_salary !== undefined && !isNaN(params.min_salary)) query.append('min_salary', params.min_salary.toString());
+  if (params.max_salary !== undefined && !isNaN(params.max_salary)) query.append('max_salary', params.max_salary.toString());
   if (params.sort_by) query.append('sort_by', params.sort_by);
   if (params.sort_order) query.append('sort_order', params.sort_order);
 
@@ -117,4 +134,68 @@ export async function fetchHRAnalytics(): Promise<HRAnalyticsResponse> {
     console.error('[API Analytics Error]:', err);
     throw err instanceof Error ? err : new Error('An unexpected error occurred while fetching analytics.');
   }
+}
+
+export async function loginHR(username: string, password: string): Promise<TokenResponse> {
+  const url = `${BASE_URL}/api/v1/auth/login`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ detail: 'Authentication failed' }));
+    throw new Error(errorData.detail || 'Invalid credentials');
+  }
+
+  return res.json();
+}
+
+export async function updateEmployee(
+  id: number,
+  data: Partial<Pick<Employee, 'base_salary' | 'job_title' | 'department' | 'status'>>,
+  token: string
+): Promise<Employee> {
+  const url = `${BASE_URL}/api/v1/employees/${id}`;
+
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ detail: 'Failed to update employee' }));
+    throw new Error(errorData.detail || 'Update operation unauthorized or failed.');
+  }
+
+  return res.json();
+}
+
+export async function createEmployee(
+  data: Omit<Employee, 'id'>,
+  token: string
+): Promise<Employee> {
+  const url = `${BASE_URL}/api/v1/employees`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ detail: 'Failed to create employee record' }));
+    throw new Error(errorData.detail || 'Creation operation unauthorized or failed.');
+  }
+
+  return res.json();
 }

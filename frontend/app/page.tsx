@@ -1,173 +1,82 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import EmployeeFilterBar from '../components/EmployeeFilterBar';
-import EmployeeTable from '../components/EmployeeTable';
-import Pagination from '../components/Pagination';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import SalaryStats from '../components/SalaryStats';
-import {
-  Employee,
-  HRAnalyticsResponse,
-  fetchEmployees,
-  fetchHRAnalytics,
-} from '../lib/api';
+import { HRAnalyticsResponse, fetchHRAnalytics } from '../lib/api';
 
-export default function DashboardPage() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+export default function LandingPage() {
   const [analytics, setAnalytics] = useState<HRAnalyticsResponse | null>(null);
-
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [department, setDepartment] = useState('');
-  const [country, setCountry] = useState('');
-  const [status, setStatus] = useState('');
-
-  const [sortBy, setSortBy] = useState('id');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
   const [loading, setLoading] = useState(true);
-  const [analyticsLoading, setAnalyticsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Search Debounce (300ms)
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1); // reset to page 1 on new search
-    }, 300);
-
-    return () => clearTimeout(handler);
-  }, [search]);
-
-  // Load Analytics Data
   useEffect(() => {
     async function loadAnalytics() {
       try {
-        setAnalyticsLoading(true);
+        setLoading(true);
         const data = await fetchHRAnalytics();
         setAnalytics(data);
       } catch (err) {
-        console.error('Failed to load HR analytics:', err);
+        console.error('Failed to load HR analytics on landing page:', err);
       } finally {
-        setAnalyticsLoading(false);
+        setLoading(false);
       }
     }
 
     loadAnalytics();
   }, []);
 
-  // Load Employees Data
-  const loadEmployeeData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await fetchEmployees({
-        page,
-        page_size: pageSize,
-        search: debouncedSearch,
-        department,
-        country,
-        status,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-      });
-
-      setEmployees(data.items);
-      setTotal(data.total);
-      setTotalPages(data.total_pages);
-    } catch (err) {
-      console.error(err);
-      setError('Unable to fetch employee salary records. Ensure backend is running.');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, debouncedSearch, department, country, status, sortBy, sortOrder]);
-
-  useEffect(() => {
-    loadEmployeeData();
-  }, [loadEmployeeData]);
-
-  // Handle Sort Toggle
-  const handleSortChange = (column: string) => {
-    if (sortBy === column) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(column);
-      setSortOrder('asc');
-    }
-    setPage(1);
-  };
-
-  // Reset Filters
-  const handleResetFilters = () => {
-    setSearch('');
-    setDebouncedSearch('');
-    setDepartment('');
-    setCountry('');
-    setStatus('');
-    setSortBy('id');
-    setSortOrder('asc');
-    setPage(1);
-  };
-
   return (
     <main className="dashboard-container">
-      {/* Header Bar */}
-      <header className="header-bar">
-        <div className="title-group">
-          <h1>ACME Employee Salary Directory</h1>
-          <p>Web-based compensation reporting & global salary management for 10,000+ staff.</p>
+      {/* Hero Section */}
+      <section className="hero-section">
+        <span className="hero-pill">ACME Salary Management Platform</span>
+        <h1 className="hero-title">Employee Compensation Directory & HR Analytics</h1>
+        <p className="hero-subtext">
+          Web-based salary directory for managing 10,000 employee records with fast searching, filtering, and role-based updates.
+        </p>
+
+        <div className="hero-actions">
+          <Link href="/directory" className="btn-hero-primary">
+            Open Employee Directory →
+          </Link>
+          <Link href="/support" className="btn-hero-secondary">
+            Developer Support
+          </Link>
         </div>
-        <div className="header-actions">
-          <span className="badge-org">ACME Organization • Global HR</span>
+      </section>
+
+      {/* Aggregate Organizational Salary Metrics */}
+      <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#0F4C5C', marginBottom: '1.25rem' }}>
+        Workforce & Compensation Overview
+      </h2>
+      <SalaryStats analytics={analytics} loading={loading} />
+
+      {/* Feature Cards Grid */}
+      <section className="features-grid">
+        <div className="feature-card">
+          <div className="feature-icon">📁</div>
+          <h3 className="feature-title">10,000 Employee Directory</h3>
+          <p className="feature-desc">
+            Search, filter by department or region, and paginate through organization records cleanly.
+          </p>
         </div>
-      </header>
 
-      {/* Analytics Metric Cards */}
-      <SalaryStats analytics={analytics} loading={analyticsLoading} />
-
-      {/* Filter Toolbar */}
-      <EmployeeFilterBar
-        search={search}
-        onSearchChange={setSearch}
-        department={department}
-        onDepartmentChange={(val) => { setDepartment(val); setPage(1); }}
-        country={country}
-        onCountryChange={(val) => { setCountry(val); setPage(1); }}
-        status={status}
-        onStatusChange={(val) => { setStatus(val); setPage(1); }}
-        onReset={handleResetFilters}
-      />
-
-      {error && (
-        <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: '8px', marginBottom: '1rem' }}>
-          {error}
+        <div className="feature-card">
+          <div className="feature-icon">⚡</div>
+          <h3 className="feature-title">Fast Database Querying</h3>
+          <p className="feature-desc">
+            Indexed SQLite engine returning paginated employee rows and analytics metrics in sub-10ms response times.
+          </p>
         </div>
-      )}
 
-      {/* Employee Data Table */}
-      <EmployeeTable
-        employees={employees}
-        loading={loading}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSortChange={handleSortChange}
-      />
-
-      {/* Pagination Bar */}
-      <Pagination
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        totalPages={totalPages}
-        onPageChange={(newPage) => setPage(newPage)}
-        onPageSizeChange={(newPageSize) => { setPageSize(newPageSize); setPage(1); }}
-      />
+        <div className="feature-card">
+          <div className="feature-icon">🔐</div>
+          <h3 className="feature-title">HR Authentication</h3>
+          <p className="feature-desc">
+            Guest mode permits read-only directory search. Authenticated HR Managers unlock salary update and employee creation tools.
+          </p>
+        </div>
+      </section>
     </main>
   );
 }

@@ -7,6 +7,8 @@ type TableProps = {
   sortBy: string;
   sortOrder: 'asc' | 'desc';
   onSortChange: (column: string) => void;
+  isHRManager?: boolean;
+  onEditEmployee?: (employee: Employee) => void;
 };
 
 export default function EmployeeTable({
@@ -15,6 +17,8 @@ export default function EmployeeTable({
   sortBy,
   sortOrder,
   onSortChange,
+  isHRManager = false,
+  onEditEmployee,
 }: TableProps) {
   const renderSortIndicator = (column: string) => {
     if (sortBy !== column) return <span className="sort-icon sort-inactive">↕</span>;
@@ -63,19 +67,19 @@ export default function EmployeeTable({
               <th onClick={() => onSortChange('joined_at')} className="sortable-th">
                 Joined Date {renderSortIndicator('joined_at')}
               </th>
+              {isHRManager && <th>Action</th>}
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={8} className="empty-cell">
+                <td colSpan={isHRManager ? 9 : 8} className="empty-cell">
                   <div className="loader-box">
                     <img
                       src="/loader.gif"
                       alt="Loading..."
                       className="loader-img"
                       onError={(e) => {
-                        // Fallback to CSS spinner if custom GIF is missing
                         (e.target as HTMLElement).style.display = 'none';
                         const parent = (e.target as HTMLElement).parentElement;
                         if (parent && !parent.querySelector('.spinner-fallback')) {
@@ -91,7 +95,7 @@ export default function EmployeeTable({
               </tr>
             ) : employees.length === 0 ? (
               <tr>
-                <td colSpan={8} className="empty-cell">
+                <td colSpan={isHRManager ? 9 : 8} className="empty-cell">
                   No matching employees found for the selected criteria.
                 </td>
               </tr>
@@ -114,6 +118,17 @@ export default function EmployeeTable({
                     </span>
                   </td>
                   <td className="text-secondary text-xs">{employee.joined_at}</td>
+                  {isHRManager && (
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => onEditEmployee?.(employee)}
+                        className="btn-edit-row"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

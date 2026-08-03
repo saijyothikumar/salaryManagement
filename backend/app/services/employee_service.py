@@ -37,6 +37,8 @@ def get_paginated_employees(
     department: str | None = None,
     country: str | None = None,
     status: str | None = None,
+    min_salary: float | None = None,
+    max_salary: float | None = None,
     sort_by: str = "id",
     sort_order: Literal["asc", "desc"] = "asc",
 ) -> PaginatedEmployeeResponse:
@@ -65,6 +67,10 @@ def get_paginated_employees(
         filters.append(Employee.country == country)
     if status:
         filters.append(Employee.status == status)
+    if min_salary is not None:
+        filters.append(Employee.base_salary >= min_salary)
+    if max_salary is not None:
+        filters.append(Employee.base_salary <= max_salary)
 
     if filters:
         statement = statement.where(*filters)

@@ -16,7 +16,26 @@ class EmployeeRead(SQLModel):
     status: str
     joined_at: date
     created_at: datetime | None = None
-    updated_at: datetime | None = None
+
+class EmployeeUpdate(SQLModel):
+    base_salary: float | None = None
+    job_title: str | None = None
+    department: str | None = None
+    status: str | None = None
+
+
+class EmployeeCreate(SQLModel):
+    employee_code: str
+    first_name: str
+    last_name: str
+    email: str
+    department: str
+    country: str
+    job_title: str
+    base_salary: float
+    currency: str = "USD"
+    status: str = "active"
+    joined_at: date
 
 
 class PaginatedEmployeeResponse(SQLModel):
