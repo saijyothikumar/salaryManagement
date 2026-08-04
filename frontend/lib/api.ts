@@ -275,3 +275,70 @@ export async function handleApprovalAction(
 
   return res.json();
 }
+
+export type ImportErrorItem = {
+  row_index: number;
+  employee_code: string;
+  name: string;
+  uploaded_bonus: string;
+  uploaded_country: string;
+  reason: string;
+};
+
+export type ImportValidatedItem = {
+  row_index: number;
+  employee_code: string;
+  name: string;
+  department: string;
+  country: string;
+  current_salary: number;
+  bonus_amount: number;
+  new_total_compensation: number;
+};
+
+export type BatchValidateResponse = {
+  total_rows: number;
+  valid_count: number;
+  error_count: number;
+  errors: ImportErrorItem[];
+  validated: ImportValidatedItem[];
+};
+
+export type BatchCommitResponse = {
+  success: boolean;
+  message: string;
+  records_updated: number;
+};
+
+export async function validateBatchImportRows(rows: Record<string, any>[]): Promise<BatchValidateResponse> {
+  const url = `${BASE_URL}/api/v1/imports/validate`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rows }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ detail: 'Validation failed' }));
+    throw new Error(errorData.detail || 'Batch validation failed');
+  }
+  return res.json();
+}
+
+export async function commitBatchImport(validatedRows: ImportValidatedItem[], token?: string): Promise<BatchCommitResponse> {
+  const url = `${BASE_URL}/api/v1/imports/commit`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : '',
+    },
+    body: JSON.stringify({ validated_rows: validatedRows }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ detail: 'Commit failed' }));
+    throw new Error(errorData.detail || 'Batch commit unauthorized or failed');
+  }
+
+  return res.json();
+}

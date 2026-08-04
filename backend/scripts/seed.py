@@ -83,9 +83,15 @@ def seed_employees(total_count: int = 10000, batch_size: int = 1000) -> None:
             hashed_password=hash_password("Admin123!@#"),
             role="hr_manager",
         )
-        session.add(hr_user)
+        hr_user2 = User(
+            username="HRUser2",
+            email="hruser2@acme.org",
+            hashed_password=hash_password("P@ssword!"),
+            role="hr_manager",
+        )
+        session.add_all([hr_user, hr_user2])
         session.commit()
-        logger.info("Seeded default HR Manager user (username: hr_admin)...")
+        logger.info("Seeded HR Manager users (hr_admin and HRUser2)...")
 
         countries = list(COUNTRY_CONFIG.keys())
         country_weights = [COUNTRY_CONFIG[c]["weight"] for c in countries]

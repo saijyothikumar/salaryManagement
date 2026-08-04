@@ -40,6 +40,11 @@ export default function Header({ onOpenBriefing }: HeaderProps) {
               </Link>
             </li>
             <li>
+              <Link href="/import" className={`nav-item ${pathname === '/import' ? 'active' : ''}`}>
+                Excel Import 📊
+              </Link>
+            </li>
+            <li>
               <Link href="/support" className={`nav-item ${pathname === '/support' ? 'active' : ''}`}>
                 Support & FAQ
               </Link>

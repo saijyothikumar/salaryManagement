@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1.analytics import router as analytics_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.employees import router as employees_router
+from app.api.v1.imports import router as imports_router
 from app.api.v1.workflows import router as workflows_router
 from app.core.database import initialize_database
 
@@ -71,6 +72,7 @@ api_v1_router.include_router(employees_router)
 api_v1_router.include_router(analytics_router)
 api_v1_router.include_router(auth_router)
 api_v1_router.include_router(workflows_router)
+api_v1_router.include_router(imports_router)
 
 app.include_router(api_v1_router)
 # Backward-compatibility router mounting for root /employees
